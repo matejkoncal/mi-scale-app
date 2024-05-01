@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function useMiScale() {
 	const [weight, setWeight] = useState(0);
+	const [debouncedWeight, setDebouncedWeight] = useState(0);
+
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			setDebouncedWeight(weight);
+		}, 200);
+		return () => clearTimeout(timeout);
+	}, [weight]);
+
 	return {
 		startScan: getStartScan(setWeight),
-		weight
+		weight,
+		debouncedWeight
 	}
 }
 
 function getStartScan(setWeight: (weight: number) => void) {
 	return async () => {
+		const devices = await navigator.bluetooth.getDevices();
 		// https://github.com/WebBluetoothCG/registries/blob/master/gatt_assigned_characteristics.txt
-		const device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'MIBFS' }], optionalServices: ["0000181b-0000-1000-8000-00805f9b34fb"] });
+		const device = devices[0] ?? await navigator.bluetooth.requestDevice({ filters: [{ name: 'MIBFS' }], optionalServices: ["0000181b-0000-1000-8000-00805f9b34fb"] });
 		await device?.gatt?.connect();
 
 		const service = await device?.gatt?.getPrimaryService('0000181b-0000-1000-8000-00805f9b34fb');
@@ -22,7 +33,6 @@ function getStartScan(setWeight: (weight: number) => void) {
 			characteristic.oncharacteristicvaluechanged = e => {
 				const char = e.target as BluetoothRemoteGATTCharacteristic;
 				const value = char.value;
-				console.log('Characteristic:', char);
 
 				if (value) {
 					const buffer = new Uint8Array(value.buffer)
