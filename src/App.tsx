@@ -2,18 +2,9 @@ import { Button } from '@mui/material';
 import './App.css'
 import { useMiScale } from './useMiScale/useMiScale'
 import ReactSpeedometer from "react-d3-speedometer"
-import { useEffect } from 'react';
 
 function App() {
   const { startScan, debouncedWeight } = useMiScale();
-
-  useEffect(() => {
-    document.onvisibilitychange = () => {
-      if (document.visibilityState === 'visible') {
-        startScan();
-      }
-    }
-  }, [startScan]);
 
   return (
     <>

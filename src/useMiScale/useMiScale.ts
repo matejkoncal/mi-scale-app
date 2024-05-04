@@ -20,9 +20,8 @@ export function useMiScale() {
 
 function getStartScan(setWeight: (weight: number) => void) {
 	return async () => {
-		const devices = await navigator.bluetooth.getDevices();
 		// https://github.com/WebBluetoothCG/registries/blob/master/gatt_assigned_characteristics.txt
-		const device = devices[0] ?? await navigator.bluetooth.requestDevice({ filters: [{ name: 'MIBFS' }], optionalServices: ["0000181b-0000-1000-8000-00805f9b34fb"] });
+		const device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'MIBFS' }], optionalServices: ["0000181b-0000-1000-8000-00805f9b34fb"] });
 		await device?.gatt?.connect();
 
 		const service = await device?.gatt?.getPrimaryService('0000181b-0000-1000-8000-00805f9b34fb');
